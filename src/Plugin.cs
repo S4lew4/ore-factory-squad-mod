@@ -329,11 +329,13 @@ namespace OfsNuke
                 if (m == null) { _slotStatus = "keine Maschine gefunden"; ShowSlotHud(); return; }
                 _betIndex = (_betIndex + 1) % 3;
                 int bet = _betIndex == 0 ? Plugin.SlotBet1.Value : _betIndex == 1 ? Plugin.SlotBet2.Value : Plugin.SlotBet3.Value;
-                m.SetBet(bet);
-                RefreshStats(m);
+                // Auf dem Host direkt ins SyncVar schreiben (umgeht die Snap-/Klemm-Funktion).
+                if (NetworkServer.active) { try { m.NetworkcurrentBet = bet; } catch { m.SetBet(bet); } }
+                else m.SetBet(bet);
+                _curBet = bet;
                 _slotStatus = "";
                 ShowSlotHud();
-                Plugin.Log.LogInfo($"Slots: Einsatz = {bet}");
+                Plugin.Log.LogInfo($"Slots: Einsatz = {bet} (Maschine meldet {m.NetworkcurrentBet})");
             }
             catch (Exception e) { Plugin.Log.LogError("Slots Bet-Fehler: " + e); }
         }
@@ -538,6 +540,7 @@ namespace OfsNuke
     internal static class OreBoost
     {
         private static readonly HashSet<int> _done = new();
+        // Wird VOR dem Break/Damage aufgerufen (da ist pieceCollectAmounts befuellt).
         public static void Boost(T_Item node)
         {
             if (node == null || !Plugin.OreYieldEnabled.Value) return;
@@ -545,26 +548,29 @@ namespace OfsNuke
             try
             {
                 int id = node.GetInstanceID();
-                if (!_done.Add(id)) return;
-                int mult = Math.Max(1, (int)Math.Round((double)Plugin.OreYieldMultiplier.Value));
-                if (mult <= 1) return;
+                if (_done.Contains(id)) return;
                 var amounts = node.pieceCollectAmounts;
                 if (amounts == null) return;
                 int n = amounts.Count;
+                if (n == 0) return; // noch nicht befuellt -> beim naechsten Treffer erneut versuchen
+                int mult = Math.Max(1, (int)Math.Round((double)Plugin.OreYieldMultiplier.Value));
+                _done.Add(id);
+                if (mult <= 1) return;
+                int before = amounts[0];
                 for (int i = 0; i < n; i++) amounts[i] = amounts[i] * mult;
-                Plugin.Log.LogInfo($"[Ore] Node x{mult}: {n} Stuecke geboostet.");
+                Plugin.Log.LogInfo($"[Ore] Node x{mult}: {n} Stuecke, [0] {before}->{amounts[0]}.");
             }
             catch (Exception e) { Plugin.Log.LogError("OreBoost-Fehler: " + e); }
         }
     }
 
-    [HarmonyPatch(typeof(T_Item), "InitializeNodePieces")]
-    internal static class Patch_NodeInit
-    { private static void Postfix(T_Item __instance) => OreBoost.Boost(__instance); }
+    [HarmonyPatch(typeof(T_Item), "Server_ForceBreakPiece")]
+    internal static class Patch_ForceBreakBoost
+    { private static void Prefix(T_Item __instance) => OreBoost.Boost(__instance); }
 
-    [HarmonyPatch(typeof(T_Item), "InitializeMysteryNodePieces")]
-    internal static class Patch_MysteryInit
-    { private static void Postfix(T_Item __instance) => OreBoost.Boost(__instance); }
+    [HarmonyPatch(typeof(T_Item), "Server_DamagePiece")]
+    internal static class Patch_DamageBoost
+    { private static void Prefix(T_Item __instance) => OreBoost.Boost(__instance); }
 
     // Winrate minimal erhoehen: eine Niete (Evaluate<=0) selten in einen Gewinn wandeln.
     [HarmonyPatch(typeof(SlotMachine), "Evaluate")]
