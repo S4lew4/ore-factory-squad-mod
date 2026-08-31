@@ -1,0 +1,44 @@
+========================================================
+  Ore Factory Squad - Mod (Bombe / LKW / Erz / Handy)
+========================================================
+
+WAS DER MOD KANN
+  F8  = "Atombombe" auf der Mine  (nur der HOST der Welt)
+  H   = Handy: Laptop-Oberflaeche oeffnen (Vertraege, Bank, Markt, ...)
+  J   = Slots / Casino oeffnen
+  + LKW-Kapazitaet x5
+  + Erz-Ertrag x3 (auch fuer die Bombe)
+  + Foerderbaender beliebig hoch stapelbar
+  + (Bergarbeiter-Grenze angehoben, sofern genug Fahrzeuge da sind)
+
+
+INSTALLATION (einfach)
+  1. Diese ZIP komplett ENTPACKEN (Rechtsklick -> "Alle extrahieren").
+  2. Das SPIEL SCHLIESSEN, falls es laeuft.
+  3. Doppelklick auf  INSTALLIEREN.bat
+     -> Der Installer findet den Spielordner automatisch und kopiert alles rein.
+     (Falls Windows warnt: "Weitere Informationen" -> "Trotzdem ausfuehren".)
+  4. Spiel starten. Der ERSTE Start dauert laenger (BepInEx richtet sich ein) -
+     bitte NICHT abbrechen. Danach laeuft alles normal.
+
+
+MULTIPLAYER
+  Jeder Mitspieler, der die Tasten nutzen will, muss den Mod ebenfalls
+  installieren (einfach diese ZIP weitergeben). Der HOST allein reicht fuer
+  die Bombe/Erz/LKW - aber Handy (H) und Slots (J) braucht jeder selbst.
+
+
+EINSTELLUNGEN AENDERN (Tasten, Werte)
+  Nach dem ersten Start:
+    <Spielordner>\BepInEx\config\ofs.nuke.cfg
+  Dort z.B. Tasten umlegen oder Multiplikatoren aendern.
+
+
+MOD DEAKTIVIEREN (ohne Loeschen)
+  Im Spielordner die Datei  winhttp.dll  umbenennen in  winhttp.dll.off
+  -> Spiel startet ohne Mod. Zum Reaktivieren zuruueckbenennen.
+
+
+DEINSTALLIEREN
+  Im Spielordner loeschen:  BepInEx-Ordner, winhttp.dll,
+  doorstop_config.ini, .doorstop_version  (der dotnet-Ordner darf bleiben).
